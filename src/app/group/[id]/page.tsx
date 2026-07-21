@@ -21,9 +21,9 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
   const [group, setGroup]           = useState<Group | null>(null);
   const [events, setEvents]         = useState<CalendarEvent[]>([]);
   const [calYear, setCalYear]       = useState(new Date().getFullYear());
-  const [calMonth, setCalMonth]     = useState(new Date().getMonth());
   const [showModal, setShowModal]   = useState(false);
   const [pickedDate, setPickedDate] = useState('');
+  const [pickedEndDate, setPickedEndDate] = useState('');
   const [addFriendMsg, setAddFriendMsg] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -33,17 +33,11 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
     setEvents(storage.getEvents().filter(e => e.groupId === id));
   }, [id]);
 
-  function prevMonth() {
-    if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1); }
-    else setCalMonth(m => m - 1);
+  function handleCalendarSelect(start: string, end: string) {
+    setPickedDate(start);
+    setPickedEndDate(start === end ? '' : end);
+    setShowModal(true);
   }
-
-  function nextMonth() {
-    if (calMonth === 11) { setCalMonth(0); setCalYear(y => y + 1); }
-    else setCalMonth(m => m + 1);
-  }
-
-  function onDayClick(date: string) { setPickedDate(date); setShowModal(true); }
 
   function saveEvent(data: {
     title: string; date: string; endDate?: string;
@@ -79,13 +73,11 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
     e.target.value = '';
   }
 
-  // Events visible in the current calendar month (including multi-day ranges that overlap)
-  const monthEvents = events.filter(e => {
+  // Events that overlap the displayed year
+  const yearEvents = events.filter(e => {
     const start = e.date;
     const end   = e.endDate ?? e.date;
-    const mStart = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-01`;
-    const mEnd   = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${new Date(calYear, calMonth + 1, 0).getDate().toString().padStart(2, '0')}`;
-    return start <= mEnd && end >= mStart;
+    return start <= `${calYear}-12-31` && end >= `${calYear}-01-01`;
   });
 
   const upcomingEvents = [...events].filter(e => !isPast(e)).sort((a, b) => a.date.localeCompare(b.date));
@@ -140,34 +132,40 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
         </div>
       )}
 
-      <div className="max-w-5xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
-        {/* Calendar */}
-        <div className="space-y-4">
-          <Calendar year={calYear} month={calMonth} events={monthEvents}
-            onPrev={prevMonth} onNext={nextMonth} onDayClick={onDayClick} />
-          <button
-            onClick={() => { setPickedDate(''); setShowModal(true); }}
-            className="w-full py-3 bg-blue-600 text-white font-semibold text-sm rounded-xl hover:bg-blue-700 transition-colors"
-          >
-            + Add event
-          </button>
-        </div>
+      <div className="max-w-5xl mx-auto px-4 py-6 space-y-5">
+        {/* Year calendar — full width */}
+        <Calendar
+          year={calYear}
+          events={yearEvents}
+          onPrevYear={() => setCalYear(y => y - 1)}
+          onNextYear={() => setCalYear(y => y + 1)}
+          onSelect={handleCalendarSelect}
+        />
+
+        <button
+          onClick={() => { setPickedDate(''); setPickedEndDate(''); setShowModal(true); }}
+          className="w-full py-3 bg-blue-600 text-white font-semibold text-sm rounded-xl hover:bg-blue-700 transition-colors"
+        >
+          + Add event manually
+        </button>
 
         {/* Events list */}
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Upcoming</p>
             {upcomingEvents.length === 0 ? (
               <div className="bg-white border border-gray-100 rounded-2xl p-5 text-center">
                 <p className="text-gray-400 text-sm">No upcoming events</p>
-                <button onClick={() => { setPickedDate(''); setShowModal(true); }}
+                <button onClick={() => { setPickedDate(''); setPickedEndDate(''); setShowModal(true); }}
                   className="text-blue-600 text-sm font-medium mt-1 hover:underline">
                   Plan something
                 </button>
               </div>
             ) : (
               <div className="space-y-2">
-                {upcomingEvents.map(ev => <EventCard key={ev.id} event={ev} onDelete={deleteEvent} />)}
+                {upcomingEvents.map(ev => (
+                  <EventCard key={ev.id} event={ev} onDelete={deleteEvent} />
+                ))}
               </div>
             )}
           </div>
@@ -176,7 +174,9 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
             <div>
               <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Past events</p>
               <div className="space-y-2">
-                {pastEvents.map(ev => <EventCard key={ev.id} event={ev} past onDelete={deleteEvent} />)}
+                {pastEvents.map(ev => (
+                  <EventCard key={ev.id} event={ev} past onDelete={deleteEvent} />
+                ))}
               </div>
             </div>
           )}
@@ -186,7 +186,12 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarFile} />
 
       {showModal && (
-        <CreateEventModal initialDate={pickedDate} onSave={saveEvent} onClose={() => setShowModal(false)} />
+        <CreateEventModal
+          initialDate={pickedDate}
+          initialEndDate={pickedEndDate}
+          onSave={saveEvent}
+          onClose={() => setShowModal(false)}
+        />
       )}
     </div>
   );
@@ -197,10 +202,7 @@ function EventCard({ event, past = false, onDelete }: { event: CalendarEvent; pa
   const startD = new Date(event.date + 'T00:00:00');
 
   return (
-    <Link
-      href={`/group/${event.groupId}/event/${event.id}`}
-      className={`flex gap-3 bg-white border rounded-2xl p-4 hover:shadow-md transition-all group ${past ? 'border-gray-100 opacity-70' : 'border-blue-100 hover:border-blue-200'}`}
-    >
+    <div className={`flex gap-3 bg-white border rounded-2xl p-4 hover:shadow-md transition-all group ${past ? 'border-gray-100 opacity-70' : 'border-blue-100 hover:border-blue-200'}`}>
       {/* Date badge */}
       <div className={`flex flex-col items-center justify-center rounded-xl shrink-0 ${isMultiDay ? 'w-14 h-12 px-1' : 'w-12 h-12'} ${past ? 'bg-gray-100' : 'bg-blue-600'}`}>
         {isMultiDay ? (
@@ -219,7 +221,7 @@ function EventCard({ event, past = false, onDelete }: { event: CalendarEvent; pa
         )}
       </div>
 
-      <div className="flex-1 min-w-0">
+      <Link href={`/group/${event.groupId}/event/${event.id}`} className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
           <p className="font-semibold text-gray-900 text-sm truncate">{event.title}</p>
           {isMultiDay && <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-medium shrink-0">trip</span>}
@@ -227,14 +229,15 @@ function EventCard({ event, past = false, onDelete }: { event: CalendarEvent; pa
         {event.time && <p className="text-xs text-gray-500 mt-0.5">⏰ {event.time}</p>}
         {event.location && <p className="text-xs text-gray-500 mt-0.5 truncate">📍 {event.location}</p>}
         {event.locked && <p className="text-xs text-blue-500 mt-1 font-medium">🔒 Snaps locked</p>}
-      </div>
+      </Link>
 
       <button
         onClick={e => { e.preventDefault(); onDelete(event.id); }}
-        className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 text-sm transition-all self-start"
+        className="text-gray-300 hover:text-red-500 text-sm transition-all self-start pt-0.5 opacity-0 group-hover:opacity-100"
+        title="Delete event"
       >
         ✕
       </button>
-    </Link>
+    </div>
   );
 }

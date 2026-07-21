@@ -25,6 +25,16 @@ export default function Home() {
     setShowModal(false);
   }
 
+  function deleteGroup(groupId: string) {
+    if (!confirm('Delete this group and all its events? This cannot be undone.')) return;
+    const allEvents = storage.getEvents();
+    const groupEventIds = new Set(allEvents.filter(e => e.groupId === groupId).map(e => e.id));
+    storage.saveGroups(groups.filter(g => g.id !== groupId));
+    storage.saveEvents(allEvents.filter(e => e.groupId !== groupId));
+    storage.saveSnaps(storage.getSnaps().filter(s => !groupEventIds.has(s.eventId)));
+    setGroups(prev => prev.filter(g => g.id !== groupId));
+  }
+
   function pickAvatar(groupId: string) {
     setEditingId(groupId);
     fileRef.current?.click();
@@ -107,6 +117,15 @@ export default function Home() {
                   </div>
                   <span className="text-blue-300 group-hover:text-white text-lg transition-colors shrink-0">›</span>
                 </Link>
+
+                {/* Delete group */}
+                <button
+                  onClick={() => deleteGroup(g.id)}
+                  className="opacity-0 group-hover:opacity-100 text-white/40 hover:text-red-400 transition-all p-1 shrink-0"
+                  title="Delete group"
+                >
+                  🗑
+                </button>
               </div>
             ))}
           </div>

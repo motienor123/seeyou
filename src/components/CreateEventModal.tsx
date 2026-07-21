@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 interface Props {
   initialDate?: string;
+  initialEndDate?: string;
   onSave: (data: {
     title: string; date: string; endDate?: string;
     time: string; location: string; description: string; locked: boolean;
@@ -11,11 +12,13 @@ interface Props {
   onClose: () => void;
 }
 
-export default function CreateEventModal({ initialDate = '', onSave, onClose }: Props) {
+export default function CreateEventModal({ initialDate = '', initialEndDate = '', onSave, onClose }: Props) {
+  const isInitMultiDay = Boolean(initialEndDate && initialEndDate !== initialDate);
+
   const [title, setTitle]       = useState('');
   const [date, setDate]         = useState(initialDate);
-  const [multiDay, setMultiDay] = useState(false);
-  const [endDate, setEndDate]   = useState('');
+  const [multiDay, setMultiDay] = useState(isInitMultiDay);
+  const [endDate, setEndDate]   = useState(isInitMultiDay ? initialEndDate : '');
   const [time, setTime]         = useState('');
   const [location, setLocation] = useState('');
   const [description, setDesc]  = useState('');
@@ -54,13 +57,13 @@ export default function CreateEventModal({ initialDate = '', onSave, onClose }: 
 
           {/* Multi-day toggle */}
           <label className="flex items-center gap-2.5 cursor-pointer select-none">
-            <input type="checkbox" checked={multiDay} onChange={e => { setMultiDay(e.target.checked); setEndDate(''); }}
+            <input type="checkbox" checked={multiDay} onChange={e => { setMultiDay(e.target.checked); if (!e.target.checked) setEndDate(''); }}
               className="w-4 h-4 accent-blue-600 rounded" />
             <span className="text-sm font-medium text-gray-700">Multi-day event (e.g. vacation)</span>
           </label>
 
           {/* Dates */}
-          <div className={`grid gap-3 ${multiDay ? 'grid-cols-2' : 'grid-cols-2'}`}>
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={labelCls}>{multiDay ? 'Start date *' : 'Date *'}</label>
               <input type="date" value={date} onChange={e => setDate(e.target.value)} className={inputCls} />
@@ -79,7 +82,7 @@ export default function CreateEventModal({ initialDate = '', onSave, onClose }: 
             )}
           </div>
 
-          {/* Time (only for single-day, already shown above in second column) */}
+          {/* Time for multi-day */}
           {multiDay && (
             <div>
               <label className={labelCls}>Time (optional)</label>
