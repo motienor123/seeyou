@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useLang } from '@/lib/LangContext';
 
 interface Props {
   initialDate?: string;
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export default function CreateEventModal({ initialDate = '', initialEndDate = '', onSave, onClose }: Props) {
+  const { t } = useLang();
   const isInitMultiDay = Boolean(initialEndDate && initialEndDate !== initialDate);
 
   const [title, setTitle]       = useState('');
@@ -45,74 +47,68 @@ export default function CreateEventModal({ initialDate = '', initialEndDate = ''
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto" onClick={onClose}>
       <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl my-auto" onClick={e => e.stopPropagation()}>
-        <h2 className="text-xl font-bold text-gray-900 mb-5">New event</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-5">{t.newEvent}</h2>
         <form onSubmit={submit} className="space-y-4">
 
-          {/* Title */}
           <div>
-            <label className={labelCls}>Title *</label>
+            <label className={labelCls}>{t.titleLabel}</label>
             <input autoFocus type="text" value={title} onChange={e => setTitle(e.target.value)}
-              placeholder="e.g. Beach day 🏖️" maxLength={80} className={inputCls} />
+              placeholder={t.titlePlaceholder} maxLength={80} className={inputCls} />
           </div>
 
-          {/* Multi-day toggle */}
           <label className="flex items-center gap-2.5 cursor-pointer select-none">
-            <input type="checkbox" checked={multiDay} onChange={e => { setMultiDay(e.target.checked); if (!e.target.checked) setEndDate(''); }}
+            <input type="checkbox" checked={multiDay}
+              onChange={e => { setMultiDay(e.target.checked); if (!e.target.checked) setEndDate(''); }}
               className="w-4 h-4 accent-blue-600 rounded" />
-            <span className="text-sm font-medium text-gray-700">Multi-day event (e.g. vacation)</span>
+            <span className="text-sm font-medium text-gray-700">{t.multiDayLabel}</span>
           </label>
 
-          {/* Dates */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={labelCls}>{multiDay ? 'Start date *' : 'Date *'}</label>
+              <label className={labelCls}>{multiDay ? t.startDateLabel : t.dateLabel}</label>
               <input type="date" value={date} onChange={e => setDate(e.target.value)} className={inputCls} />
             </div>
             {multiDay ? (
               <div>
-                <label className={labelCls}>End date *</label>
+                <label className={labelCls}>{t.endDateLabel}</label>
                 <input type="date" value={endDate} min={date || undefined}
                   onChange={e => setEndDate(e.target.value)} className={inputCls} />
               </div>
             ) : (
               <div>
-                <label className={labelCls}>Time</label>
+                <label className={labelCls}>{t.timeLabel}</label>
                 <input type="time" value={time} onChange={e => setTime(e.target.value)} className={inputCls} />
               </div>
             )}
           </div>
 
-          {/* Time for multi-day */}
           {multiDay && (
             <div>
-              <label className={labelCls}>Time (optional)</label>
+              <label className={labelCls}>{t.timeOptLabel}</label>
               <input type="time" value={time} onChange={e => setTime(e.target.value)} className={inputCls} />
             </div>
           )}
 
-          {/* Location */}
           <div>
-            <label className={labelCls}>Location</label>
+            <label className={labelCls}>{t.locationLabel}</label>
             <input type="text" value={location} onChange={e => setLocation(e.target.value)}
-              placeholder="Where are you going?" maxLength={100} className={inputCls} />
+              placeholder={t.locationPlaceholder} maxLength={100} className={inputCls} />
           </div>
 
-          {/* Description */}
           <div>
-            <label className={labelCls}>Description</label>
+            <label className={labelCls}>{t.descLabel}</label>
             <textarea value={description} onChange={e => setDesc(e.target.value)}
-              placeholder="What's the plan?" rows={3} maxLength={300}
+              placeholder={t.descPlaceholder} rows={3} maxLength={300}
               className={`${inputCls} resize-none`} />
           </div>
 
-          {/* Lock snaps */}
           <label className="flex items-center gap-3 p-3 bg-blue-50 rounded-xl cursor-pointer select-none">
             <input type="checkbox" checked={locked} onChange={e => setLocked(e.target.checked)}
               className="w-4 h-4 accent-blue-600" />
             <div>
-              <p className="text-sm font-semibold text-blue-900">🔒 Lock snaps until after the event</p>
+              <p className="text-sm font-semibold text-blue-900">{t.lockLabel}</p>
               <p className="text-xs text-blue-600 mt-0.5">
-                Photos unlock once {multiDay && endDate ? 'the last day' : 'the event date'} has passed
+                {t.lockHintPrefix}{multiDay && endDate ? t.lockHintMulti : t.lockHintSingle}{t.lockHintSuffix}
               </p>
             </div>
           </label>
@@ -120,12 +116,12 @@ export default function CreateEventModal({ initialDate = '', initialEndDate = ''
           <div className="flex gap-3 pt-1">
             <button type="button" onClick={onClose}
               className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
-              Cancel
+              {t.cancel}
             </button>
             <button type="submit"
               disabled={!title.trim() || !date || (multiDay && !endDate)}
               className="flex-1 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-              Add event
+              {t.addEventBtn}
             </button>
           </div>
         </form>

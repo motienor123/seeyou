@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { storage, Group } from '@/lib/storage';
+import { useLang } from '@/lib/LangContext';
 import CreateGroupModal from '@/components/CreateGroupModal';
 
 function fmtDate(iso: string) {
@@ -10,9 +11,10 @@ function fmtDate(iso: string) {
 }
 
 export default function Home() {
-  const [groups, setGroups]         = useState<Group[]>([]);
-  const [showModal, setShowModal]   = useState(false);
-  const [editingId, setEditingId]   = useState<string | null>(null);
+  const { t } = useLang();
+  const [groups, setGroups]       = useState<Group[]>([]);
+  const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { setGroups(storage.getGroups()); }, []);
@@ -26,7 +28,7 @@ export default function Home() {
   }
 
   function deleteGroup(groupId: string) {
-    if (!confirm('Delete this group and all its events? This cannot be undone.')) return;
+    if (!confirm(t.deleteGroupConfirm)) return;
     const allEvents = storage.getEvents();
     const groupEventIds = new Set(allEvents.filter(e => e.groupId === groupId).map(e => e.id));
     storage.saveGroups(groups.filter(g => g.id !== groupId));
@@ -62,14 +64,14 @@ export default function Home() {
         <div className="flex items-end justify-between">
           <div>
             <h1 className="text-4xl font-black text-white tracking-tight">seeyou</h1>
-            <p className="text-blue-300 text-sm mt-1">Plan together. Show up together.</p>
+            <p className="text-blue-300 text-sm mt-1">{t.appTagline}</p>
           </div>
           <button
             onClick={() => setShowModal(true)}
             className="flex items-center gap-2 bg-white text-blue-700 font-semibold text-sm px-4 py-2.5 rounded-xl hover:bg-blue-50 transition-colors shadow-lg"
           >
             <span className="text-lg leading-none">+</span>
-            New group
+            {t.newGroup}
           </button>
         </div>
       </header>
@@ -78,25 +80,24 @@ export default function Home() {
         {groups.length === 0 ? (
           <div className="mt-20 text-center">
             <div className="text-6xl mb-4">👥</div>
-            <h2 className="text-white text-xl font-bold mb-2">No groups yet</h2>
-            <p className="text-blue-300 text-sm mb-6">Create your first friend group and start planning.</p>
+            <h2 className="text-white text-xl font-bold mb-2">{t.noGroups}</h2>
+            <p className="text-blue-300 text-sm mb-6">{t.noGroupsDesc}</p>
             <button
               onClick={() => setShowModal(true)}
               className="bg-white text-blue-700 font-semibold text-sm px-6 py-3 rounded-xl hover:bg-blue-50 transition-colors"
             >
-              Create a group
+              {t.createGroup}
             </button>
           </div>
         ) : (
           <div className="space-y-3 mt-2">
-            <p className="text-blue-300 text-xs font-semibold uppercase tracking-widest mb-4">Your groups</p>
+            <p className="text-blue-300 text-xs font-semibold uppercase tracking-widest mb-4">{t.yourGroups}</p>
             {groups.map(g => (
               <div key={g.id} className="flex items-center gap-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/10 rounded-2xl px-5 py-4 transition-all group">
-                {/* Avatar — click to change */}
                 <button
                   onClick={() => pickAvatar(g.id)}
                   className="w-12 h-12 rounded-xl shrink-0 overflow-hidden relative group/av"
-                  title="Change group photo"
+                  title={t.changePhoto}
                 >
                   {g.avatar ? (
                     <img src={g.avatar} alt={g.name} className="w-full h-full object-cover" />
@@ -113,26 +114,22 @@ export default function Home() {
                 <Link href={`/group/${g.id}`} className="flex-1 min-w-0 flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-white font-semibold truncate">{g.name}</p>
-                    <p className="text-blue-300 text-xs mt-0.5">Created {fmtDate(g.createdAt)}</p>
+                    <p className="text-blue-300 text-xs mt-0.5">{t.createdLabel} {fmtDate(g.createdAt)}</p>
                   </div>
                   <span className="text-blue-300 group-hover:text-white text-lg transition-colors shrink-0">›</span>
                 </Link>
 
-                {/* Delete group */}
                 <button
                   onClick={() => deleteGroup(g.id)}
                   className="opacity-0 group-hover:opacity-100 text-white/40 hover:text-red-400 transition-all p-1 shrink-0"
-                  title="Delete group"
-                >
-                  🗑
-                </button>
+                  title="Delete"
+                >🗑</button>
               </div>
             ))}
           </div>
         )}
       </main>
 
-      {/* Hidden file input for avatar upload */}
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarFile} />
 
       {showModal && (

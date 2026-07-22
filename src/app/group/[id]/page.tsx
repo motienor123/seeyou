@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, use } from 'react';
 import Link from 'next/link';
 import { storage, Group, CalendarEvent } from '@/lib/storage';
 import { getColor, EVENT_PALETTE } from '@/lib/colors';
+import { useLang } from '@/lib/LangContext';
 import Calendar from '@/components/Calendar';
 import CreateEventModal from '@/components/CreateEventModal';
 
@@ -18,14 +19,15 @@ function fmtShort(dateStr: string) {
 
 export default function GroupPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const { t } = useLang();
 
-  const [group, setGroup]           = useState<Group | null>(null);
-  const [events, setEvents]         = useState<CalendarEvent[]>([]);
-  const [calYear, setCalYear]       = useState(new Date().getFullYear());
-  const [showModal, setShowModal]   = useState(false);
-  const [pickedDate, setPickedDate] = useState('');
+  const [group, setGroup]                 = useState<Group | null>(null);
+  const [events, setEvents]               = useState<CalendarEvent[]>([]);
+  const [calYear, setCalYear]             = useState(new Date().getFullYear());
+  const [showModal, setShowModal]         = useState(false);
+  const [pickedDate, setPickedDate]       = useState('');
   const [pickedEndDate, setPickedEndDate] = useState('');
-  const [addFriendMsg, setAddFriendMsg] = useState(false);
+  const [addFriendMsg, setAddFriendMsg]   = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -53,7 +55,7 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
   }
 
   function deleteEvent(evId: string) {
-    if (!confirm('Delete this event?')) return;
+    if (!confirm(t.deleteEventConfirm)) return;
     const next = storage.getEvents().filter(e => e.id !== evId);
     storage.saveEvents(next);
     setEvents(next.filter(e => e.groupId === id));
@@ -75,7 +77,6 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
     e.target.value = '';
   }
 
-  // Events that overlap the displayed year
   const yearEvents = events.filter(e => {
     const start = e.date;
     const end   = e.endDate ?? e.date;
@@ -89,8 +90,8 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
     return (
       <div className="min-h-screen bg-blue-950 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-white text-lg font-semibold">Group not found</p>
-          <Link href="/" className="text-blue-300 text-sm mt-2 block hover:underline">← Back home</Link>
+          <p className="text-white text-lg font-semibold">{t.groupNotFound}</p>
+          <Link href="/" className="text-blue-300 text-sm mt-2 block hover:underline">{t.backHome}</Link>
         </div>
       </div>
     );
@@ -98,14 +99,12 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-blue-600 text-white px-6 py-4 flex items-center gap-4 shadow-md">
         <Link href="/" className="text-blue-200 hover:text-white transition-colors text-sm shrink-0">
           ← seeyou
         </Link>
 
-        {/* Avatar */}
-        <button onClick={changeAvatar} className="w-9 h-9 rounded-lg overflow-hidden shrink-0 relative group/av" title="Change group photo">
+        <button onClick={changeAvatar} className="w-9 h-9 rounded-lg overflow-hidden shrink-0 relative group/av" title={t.changePhoto}>
           {group.avatar ? (
             <img src={group.avatar} alt={group.name} className="w-full h-full object-cover" />
           ) : (
@@ -124,18 +123,17 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
           onClick={() => { setAddFriendMsg(true); setTimeout(() => setAddFriendMsg(false), 3000); }}
           className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white text-sm font-medium px-3 py-2 rounded-xl transition-colors shrink-0"
         >
-          👤 Add friend
+          {t.addFriend}
         </button>
       </header>
 
       {addFriendMsg && (
         <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-gray-900 text-white text-sm px-5 py-3 rounded-xl shadow-xl">
-          ✦ This feature will be added later
+          {t.addFriendLater}
         </div>
       )}
 
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-5">
-        {/* Year calendar — full width */}
         <Calendar
           year={calYear}
           events={yearEvents}
@@ -148,25 +146,24 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
           onClick={() => { setPickedDate(''); setPickedEndDate(''); setShowModal(true); }}
           className="w-full py-3 bg-blue-600 text-white font-semibold text-sm rounded-xl hover:bg-blue-700 transition-colors"
         >
-          + Add event manually
+          {t.addEventManually}
         </button>
 
-        {/* Events list */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Upcoming</p>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">{t.upcoming}</p>
             {upcomingEvents.length === 0 ? (
               <div className="bg-white border border-gray-100 rounded-2xl p-5 text-center">
-                <p className="text-gray-400 text-sm">No upcoming events</p>
+                <p className="text-gray-400 text-sm">{t.noUpcoming}</p>
                 <button onClick={() => { setPickedDate(''); setPickedEndDate(''); setShowModal(true); }}
                   className="text-blue-600 text-sm font-medium mt-1 hover:underline">
-                  Plan something
+                  {t.planSomething}
                 </button>
               </div>
             ) : (
               <div className="space-y-2">
                 {upcomingEvents.map(ev => (
-                  <EventCard key={ev.id} event={ev} onDelete={deleteEvent} />
+                  <EventCard key={ev.id} event={ev} tripLabel={t.trip} onDelete={deleteEvent} />
                 ))}
               </div>
             )}
@@ -174,10 +171,10 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
 
           {pastEvents.length > 0 && (
             <div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Past events</p>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">{t.pastEvents}</p>
               <div className="space-y-2">
                 {pastEvents.map(ev => (
-                  <EventCard key={ev.id} event={ev} past onDelete={deleteEvent} />
+                  <EventCard key={ev.id} event={ev} tripLabel={t.trip} past onDelete={deleteEvent} />
                 ))}
               </div>
             </div>
@@ -199,7 +196,9 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
   );
 }
 
-function EventCard({ event, past = false, onDelete }: { event: CalendarEvent; past?: boolean; onDelete: (id: string) => void }) {
+function EventCard({ event, past = false, tripLabel, onDelete }: {
+  event: CalendarEvent; past?: boolean; tripLabel: string; onDelete: (id: string) => void;
+}) {
   const isMultiDay = event.endDate && event.endDate !== event.date;
   const startD = new Date(event.date + 'T00:00:00');
   const color = getColor(event.colorIndex);
@@ -209,7 +208,6 @@ function EventCard({ event, past = false, onDelete }: { event: CalendarEvent; pa
       className={`flex gap-3 bg-white border rounded-2xl p-4 hover:shadow-md transition-all group ${past ? 'opacity-70' : ''}`}
       style={{ borderColor: past ? '#f3f4f6' : `${color.circle}40` }}
     >
-      {/* Date badge */}
       <div
         className={`flex flex-col items-center justify-center rounded-xl shrink-0 ${isMultiDay ? 'w-14 h-12 px-1' : 'w-12 h-12'}`}
         style={{ background: past ? '#f3f4f6' : color.card }}
@@ -234,10 +232,8 @@ function EventCard({ event, past = false, onDelete }: { event: CalendarEvent; pa
         <div className="flex items-center gap-1.5">
           <p className="font-semibold text-gray-900 text-sm truncate">{event.title}</p>
           {isMultiDay && (
-            <span
-              className="text-xs px-1.5 py-0.5 rounded-full font-medium shrink-0 text-white"
-              style={{ background: color.circle }}
-            >trip</span>
+            <span className="text-xs px-1.5 py-0.5 rounded-full font-medium shrink-0 text-white"
+              style={{ background: color.circle }}>{tripLabel}</span>
           )}
         </div>
         {event.time && <p className="text-xs text-gray-500 mt-0.5">⏰ {event.time}</p>}
@@ -248,10 +244,7 @@ function EventCard({ event, past = false, onDelete }: { event: CalendarEvent; pa
       <button
         onClick={e => { e.preventDefault(); onDelete(event.id); }}
         className="text-gray-300 hover:text-red-500 text-sm transition-all self-start pt-0.5 opacity-0 group-hover:opacity-100"
-        title="Delete event"
-      >
-        ✕
-      </button>
+      >✕</button>
     </div>
   );
 }
