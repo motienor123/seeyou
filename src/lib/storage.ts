@@ -15,6 +15,7 @@ export interface CalendarEvent {
   location: string;
   description: string;
   locked: boolean;
+  colorIndex?: number; // index into EVENT_PALETTE (0–7)
   createdAt: string;
 }
 

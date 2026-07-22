@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, use } from 'react';
 import Link from 'next/link';
 import { storage, Group, CalendarEvent } from '@/lib/storage';
+import { getColor, EVENT_PALETTE } from '@/lib/colors';
 import Calendar from '@/components/Calendar';
 import CreateEventModal from '@/components/CreateEventModal';
 
@@ -43,7 +44,8 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
     title: string; date: string; endDate?: string;
     time: string; location: string; description: string; locked: boolean;
   }) {
-    const ev: CalendarEvent = { id: crypto.randomUUID(), groupId: id, createdAt: new Date().toISOString(), ...data };
+    const colorIndex = events.length % EVENT_PALETTE.length;
+    const ev: CalendarEvent = { id: crypto.randomUUID(), groupId: id, createdAt: new Date().toISOString(), colorIndex, ...data };
     const next = [...storage.getEvents(), ev];
     storage.saveEvents(next);
     setEvents(next.filter(e => e.groupId === id));
@@ -200,18 +202,25 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
 function EventCard({ event, past = false, onDelete }: { event: CalendarEvent; past?: boolean; onDelete: (id: string) => void }) {
   const isMultiDay = event.endDate && event.endDate !== event.date;
   const startD = new Date(event.date + 'T00:00:00');
+  const color = getColor(event.colorIndex);
 
   return (
-    <div className={`flex gap-3 bg-white border rounded-2xl p-4 hover:shadow-md transition-all group ${past ? 'border-gray-100 opacity-70' : 'border-blue-100 hover:border-blue-200'}`}>
+    <div
+      className={`flex gap-3 bg-white border rounded-2xl p-4 hover:shadow-md transition-all group ${past ? 'opacity-70' : ''}`}
+      style={{ borderColor: past ? '#f3f4f6' : `${color.circle}40` }}
+    >
       {/* Date badge */}
-      <div className={`flex flex-col items-center justify-center rounded-xl shrink-0 ${isMultiDay ? 'w-14 h-12 px-1' : 'w-12 h-12'} ${past ? 'bg-gray-100' : 'bg-blue-600'}`}>
+      <div
+        className={`flex flex-col items-center justify-center rounded-xl shrink-0 ${isMultiDay ? 'w-14 h-12 px-1' : 'w-12 h-12'}`}
+        style={{ background: past ? '#f3f4f6' : color.card }}
+      >
         {isMultiDay ? (
           <span className={`text-[10px] font-bold text-center leading-tight ${past ? 'text-gray-600' : 'text-white'}`}>
             {fmtShort(event.date)}<br/>→ {fmtShort(event.endDate!)}
           </span>
         ) : (
           <>
-            <span className={`text-xs font-semibold uppercase ${past ? 'text-gray-500' : 'text-blue-200'}`}>
+            <span className={`text-xs font-semibold uppercase ${past ? 'text-gray-500' : 'text-white/70'}`}>
               {startD.toLocaleDateString([], { month: 'short' })}
             </span>
             <span className={`text-lg font-black leading-none ${past ? 'text-gray-700' : 'text-white'}`}>
@@ -224,7 +233,12 @@ function EventCard({ event, past = false, onDelete }: { event: CalendarEvent; pa
       <Link href={`/group/${event.groupId}/event/${event.id}`} className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
           <p className="font-semibold text-gray-900 text-sm truncate">{event.title}</p>
-          {isMultiDay && <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-medium shrink-0">trip</span>}
+          {isMultiDay && (
+            <span
+              className="text-xs px-1.5 py-0.5 rounded-full font-medium shrink-0 text-white"
+              style={{ background: color.circle }}
+            >trip</span>
+          )}
         </div>
         {event.time && <p className="text-xs text-gray-500 mt-0.5">⏰ {event.time}</p>}
         {event.location && <p className="text-xs text-gray-500 mt-0.5 truncate">📍 {event.location}</p>}
