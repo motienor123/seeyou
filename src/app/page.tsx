@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { storage, Group } from '@/lib/storage';
 import { useLang } from '@/lib/LangContext';
 import CreateGroupModal from '@/components/CreateGroupModal';
+import ConfirmModal from '@/components/ConfirmModal';
 
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString([], { month: 'long', day: 'numeric', year: 'numeric' });
@@ -15,6 +16,7 @@ export default function Home() {
   const [groups, setGroups]       = useState<Group[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [confirm, setConfirm]     = useState<{ msg: string; action: () => void } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { setGroups(storage.getGroups()); }, []);
@@ -28,13 +30,18 @@ export default function Home() {
   }
 
   function deleteGroup(groupId: string) {
-    if (!confirm(t.deleteGroupConfirm)) return;
-    const allEvents = storage.getEvents();
-    const groupEventIds = new Set(allEvents.filter(e => e.groupId === groupId).map(e => e.id));
-    storage.saveGroups(groups.filter(g => g.id !== groupId));
-    storage.saveEvents(allEvents.filter(e => e.groupId !== groupId));
-    storage.saveSnaps(storage.getSnaps().filter(s => !groupEventIds.has(s.eventId)));
-    setGroups(prev => prev.filter(g => g.id !== groupId));
+    setConfirm({
+      msg: t.deleteGroupConfirm,
+      action: () => {
+        const allEvents = storage.getEvents();
+        const groupEventIds = new Set(allEvents.filter(e => e.groupId === groupId).map(e => e.id));
+        storage.saveGroups(groups.filter(g => g.id !== groupId));
+        storage.saveEvents(allEvents.filter(e => e.groupId !== groupId));
+        storage.saveSnaps(storage.getSnaps().filter(s => !groupEventIds.has(s.eventId)));
+        setGroups(prev => prev.filter(g => g.id !== groupId));
+        setConfirm(null);
+      },
+    });
   }
 
   function pickAvatar(groupId: string) {
@@ -130,10 +137,27 @@ export default function Home() {
         )}
       </main>
 
+      <footer className="mt-8 text-center pb-2">
+        <a
+          href="mailto:motiejus.nor@gmail.com"
+          className="text-blue-400 hover:text-blue-200 text-xs transition-colors"
+        >
+          motiejus.nor@gmail.com
+        </a>
+      </footer>
+
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarFile} />
 
       {showModal && (
         <CreateGroupModal onCreate={createGroup} onClose={() => setShowModal(false)} />
+      )}
+
+      {confirm && (
+        <ConfirmModal
+          message={confirm.msg}
+          onConfirm={confirm.action}
+          onCancel={() => setConfirm(null)}
+        />
       )}
     </div>
   );

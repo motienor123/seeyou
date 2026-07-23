@@ -7,6 +7,7 @@ import { getColor, EVENT_PALETTE } from '@/lib/colors';
 import { useLang } from '@/lib/LangContext';
 import Calendar from '@/components/Calendar';
 import CreateEventModal from '@/components/CreateEventModal';
+import ConfirmModal from '@/components/ConfirmModal';
 
 function isPast(event: CalendarEvent) {
   const endDate = event.endDate ?? event.date;
@@ -28,6 +29,7 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
   const [pickedDate, setPickedDate]       = useState('');
   const [pickedEndDate, setPickedEndDate] = useState('');
   const [addFriendMsg, setAddFriendMsg]   = useState(false);
+  const [confirm, setConfirm]             = useState<{ msg: string; action: () => void } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -55,10 +57,15 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
   }
 
   function deleteEvent(evId: string) {
-    if (!confirm(t.deleteEventConfirm)) return;
-    const next = storage.getEvents().filter(e => e.id !== evId);
-    storage.saveEvents(next);
-    setEvents(next.filter(e => e.groupId === id));
+    setConfirm({
+      msg: t.deleteEventConfirm,
+      action: () => {
+        const next = storage.getEvents().filter(e => e.id !== evId);
+        storage.saveEvents(next);
+        setEvents(next.filter(e => e.groupId === id));
+        setConfirm(null);
+      },
+    });
   }
 
   function changeAvatar() { fileRef.current?.click(); }
@@ -190,6 +197,14 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
           initialEndDate={pickedEndDate}
           onSave={saveEvent}
           onClose={() => setShowModal(false)}
+        />
+      )}
+
+      {confirm && (
+        <ConfirmModal
+          message={confirm.msg}
+          onConfirm={confirm.action}
+          onCancel={() => setConfirm(null)}
         />
       )}
     </div>

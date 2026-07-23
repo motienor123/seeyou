@@ -72,6 +72,18 @@ export const translations = {
     eventHappened: 'This event has happened!',
     eventNotFound: 'Event not found',
     backToGroup: '← Back to group',
+    // Confirm dialog
+    confirmTitle: 'Are you sure?',
+    confirmCannotUndo: 'This action cannot be undone.',
+    deleteBtn: 'Delete',
+    // Error page
+    errorTitle: 'Something went wrong',
+    errorDesc: 'An unexpected error occurred.',
+    tryAgain: 'Try again',
+    goHome: 'Go home',
+    // Not found
+    notFoundTitle: 'Page not found',
+    notFoundDesc: "This page doesn't exist.",
   },
   lt: {
     // App
@@ -146,6 +158,18 @@ export const translations = {
     eventHappened: 'Šis įvykis jau įvyko!',
     eventNotFound: 'Įvykis nerastas',
     backToGroup: '← Atgal į grupę',
+    // Confirm dialog
+    confirmTitle: 'Ar tikrai?',
+    confirmCannotUndo: 'Šio veiksmo negalima atšaukti.',
+    deleteBtn: 'Ištrinti',
+    // Error page
+    errorTitle: 'Kažkas nepavyko',
+    errorDesc: 'Įvyko netikėta klaida.',
+    tryAgain: 'Bandyti dar kartą',
+    goHome: 'Į pradžią',
+    // Not found
+    notFoundTitle: 'Puslapis nerastas',
+    notFoundDesc: 'Šis puslapis neegzistuoja.',
   },
 } as const;
 
