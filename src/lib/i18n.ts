@@ -72,6 +72,15 @@ export const translations = {
     eventHappened: 'This event has happened!',
     eventNotFound: 'Event not found',
     backToGroup: '← Back to group',
+    // Tabs
+    tabCalendar: 'Calendar',
+    tabCamera: 'Camera',
+    quickSnapsTitle: 'Quick Snaps',
+    quickSnapsSubtitle: 'Send a photo directly to any event',
+    snapCount: (n: number) => n === 1 ? '1 snap' : `${n} snaps`,
+    snapSentTo: (name: string) => `Snap added to "${name}"!`,
+    noEventsCamera: 'No events yet — create one from the Calendar tab.',
+    lockedUntilAfter: 'Locked until after the event',
     // Confirm dialog
     confirmTitle: 'Are you sure?',
     confirmCannotUndo: 'This action cannot be undone.',
@@ -158,6 +167,15 @@ export const translations = {
     eventHappened: 'Šis įvykis jau įvyko!',
     eventNotFound: 'Įvykis nerastas',
     backToGroup: '← Atgal į grupę',
+    // Tabs
+    tabCalendar: 'Kalendorius',
+    tabCamera: 'Kamera',
+    quickSnapsTitle: 'Greitos nuotraukos',
+    quickSnapsSubtitle: 'Siųskite nuotrauką tiesiai į įvykį',
+    snapCount: (n: number) => n === 1 ? '1 nuotrauka' : `${n} nuotraukos`,
+    snapSentTo: (name: string) => `Nuotrauka pridėta į "${name}"!`,
+    noEventsCamera: 'Dar nėra įvykių — sukurkite iš Kalendoriaus.',
+    lockedUntilAfter: 'Užrakinta iki įvykio pabaigos',
     // Confirm dialog
     confirmTitle: 'Ar tikrai?',
     confirmCannotUndo: 'Šio veiksmo negalima atšaukti.',
