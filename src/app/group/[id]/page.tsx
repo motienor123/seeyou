@@ -344,44 +344,50 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
                         past ? 'opacity-60 border-gray-100' : 'border-gray-100 hover:border-blue-100 hover:shadow-sm'
                       }`}
                     >
-                      {/* Date badge */}
-                      <div
-                        className="w-12 h-12 rounded-xl shrink-0 flex flex-col items-center justify-center"
-                        style={{ background: past ? '#f3f4f6' : color.card }}
+                      {/* Clickable area → event detail page */}
+                      <Link
+                        href={`/group/${id}/event/${ev.id}`}
+                        className="flex items-center gap-3 flex-1 min-w-0"
                       >
-                        {isMulti ? (
-                          <span className={`text-[9px] font-bold text-center leading-tight ${past ? 'text-gray-500' : 'text-white'}`}>
-                            {fmtShort(ev.date)}<br/>→{fmtShort(ev.endDate!)}
-                          </span>
-                        ) : (
-                          <>
-                            <span className={`text-[10px] font-semibold uppercase ${past ? 'text-gray-400' : 'text-white/70'}`}>
-                              {startD.toLocaleDateString([], { month: 'short' })}
+                        {/* Date badge */}
+                        <div
+                          className="w-12 h-12 rounded-xl shrink-0 flex flex-col items-center justify-center"
+                          style={{ background: past ? '#f3f4f6' : color.card }}
+                        >
+                          {isMulti ? (
+                            <span className={`text-[9px] font-bold text-center leading-tight ${past ? 'text-gray-500' : 'text-white'}`}>
+                              {fmtShort(ev.date)}<br/>→{fmtShort(ev.endDate!)}
                             </span>
-                            <span className={`text-base font-black leading-none ${past ? 'text-gray-600' : 'text-white'}`}>
-                              {startD.getDate()}
-                            </span>
-                          </>
-                        )}
-                      </div>
-
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-gray-900 text-sm truncate">{ev.title}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          {ev.location && (
-                            <span className="text-xs text-gray-400 truncate max-w-[120px]">📍 {ev.location}</span>
+                          ) : (
+                            <>
+                              <span className={`text-[10px] font-semibold uppercase ${past ? 'text-gray-400' : 'text-white/70'}`}>
+                                {startD.toLocaleDateString([], { month: 'short' })}
+                              </span>
+                              <span className={`text-base font-black leading-none ${past ? 'text-gray-600' : 'text-white'}`}>
+                                {startD.getDate()}
+                              </span>
+                            </>
                           )}
-                          <span className="text-xs font-medium" style={{ color: count > 0 ? color.circle : '#9ca3af' }}>
-                            {t.snapCount(count)}
-                          </span>
                         </div>
-                        {locked && (
-                          <p className="text-xs text-amber-500 mt-0.5 font-medium">🔒 {t.lockedUntilAfter}</p>
-                        )}
-                      </div>
 
-                      {/* Action button */}
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-gray-900 text-sm truncate">{ev.title}</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            {ev.location && (
+                              <span className="text-xs text-gray-400 truncate max-w-[120px]">📍 {ev.location}</span>
+                            )}
+                            <span className="text-xs font-medium" style={{ color: count > 0 ? color.circle : '#9ca3af' }}>
+                              {t.snapCount(count)}
+                            </span>
+                          </div>
+                          {locked && (
+                            <p className="text-xs text-amber-500 mt-0.5 font-medium">🔒 {t.lockedUntilAfter}</p>
+                          )}
+                        </div>
+                      </Link>
+
+                      {/* Action button — separate from the link */}
                       {locked ? (
                         <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center shrink-0">
                           <span className="text-lg">🔒</span>
