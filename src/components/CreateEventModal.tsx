@@ -41,13 +41,13 @@ export default function CreateEventModal({ initialDate = '', initialEndDate = ''
     });
   }
 
-  const inputCls = 'w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 text-gray-900';
-  const labelCls = 'block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5';
+  const inputCls = 'w-full px-3 py-2.5 border border-gray-200 dark:border-gray-700 dark:bg-gray-800 rounded-xl text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 text-gray-900 dark:text-white';
+  const labelCls = 'block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5';
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto" onClick={onClose}>
-      <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl my-auto" onClick={e => e.stopPropagation()}>
-        <h2 className="text-xl font-bold text-gray-900 mb-5">{t.newEvent}</h2>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 w-full max-w-md shadow-2xl my-auto" onClick={e => e.stopPropagation()}>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-5">{t.newEvent}</h2>
         <form onSubmit={submit} className="space-y-4">
 
           <div>
@@ -60,7 +60,7 @@ export default function CreateEventModal({ initialDate = '', initialEndDate = ''
             <input type="checkbox" checked={multiDay}
               onChange={e => { setMultiDay(e.target.checked); if (!e.target.checked) setEndDate(''); }}
               className="w-4 h-4 accent-blue-600 rounded" />
-            <span className="text-sm font-medium text-gray-700">{t.multiDayLabel}</span>
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t.multiDayLabel}</span>
           </label>
 
           <div className="grid grid-cols-2 gap-3">
@@ -102,12 +102,12 @@ export default function CreateEventModal({ initialDate = '', initialEndDate = ''
               className={`${inputCls} resize-none`} />
           </div>
 
-          <label className="flex items-center gap-3 p-3 bg-blue-50 rounded-xl cursor-pointer select-none">
+          <label className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-950/40 rounded-xl cursor-pointer select-none">
             <input type="checkbox" checked={locked} onChange={e => setLocked(e.target.checked)}
               className="w-4 h-4 accent-blue-600" />
             <div>
-              <p className="text-sm font-semibold text-blue-900">{t.lockLabel}</p>
-              <p className="text-xs text-blue-600 mt-0.5">
+              <p className="text-sm font-semibold text-blue-900 dark:text-blue-200">{t.lockLabel}</p>
+              <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">
                 {t.lockHintPrefix}{multiDay && endDate ? t.lockHintMulti : t.lockHintSingle}{t.lockHintSuffix}
               </p>
             </div>
@@ -115,7 +115,7 @@ export default function CreateEventModal({ initialDate = '', initialEndDate = ''
 
           <div className="flex gap-3 pt-1">
             <button type="button" onClick={onClose}
-              className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+              className="flex-1 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
               {t.cancel}
             </button>
             <button type="submit"

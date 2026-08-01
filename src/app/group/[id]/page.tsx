@@ -4,7 +4,8 @@ import { useState, useEffect, useRef, use } from 'react';
 import Link from 'next/link';
 import { storage, Group, CalendarEvent, Snap } from '@/lib/storage';
 import { getColor, EVENT_PALETTE } from '@/lib/colors';
-import { useLang } from '@/lib/LangContext';
+import { useLang, LangToggle } from '@/lib/LangContext';
+import { useTheme, ThemeToggle } from '@/lib/ThemeContext';
 import Calendar from '@/components/Calendar';
 import CreateEventModal from '@/components/CreateEventModal';
 import ConfirmModal from '@/components/ConfirmModal';
@@ -45,6 +46,7 @@ function CameraIcon({ className }: { className?: string }) {
 export default function GroupPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { t } = useLang();
+  const { theme } = useTheme();
 
   const [group, setGroup]                 = useState<Group | null>(null);
   const [events, setEvents]               = useState<CalendarEvent[]>([]);
@@ -176,7 +178,7 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <header className="bg-blue-600 text-white px-6 py-4 flex items-center gap-4 shadow-md">
         <Link href="/" className="text-blue-200 hover:text-white transition-colors text-sm shrink-0">
@@ -199,6 +201,8 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
 
         <h1 className="font-bold text-lg truncate flex-1">{group.name}</h1>
 
+        <ThemeToggle />
+        <LangToggle />
         <button
           onClick={() => { setAddFriendMsg(true); setTimeout(() => setAddFriendMsg(false), 3000); }}
           className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white text-sm font-medium px-3 py-2 rounded-xl transition-colors shrink-0"
@@ -208,14 +212,14 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
       </header>
 
       {/* ── Tab bar ────────────────────────────────────────────────────────── */}
-      <div className="sticky top-0 z-30 bg-white/90 backdrop-blur-sm border-b border-gray-100 shadow-sm">
+      <div className="sticky top-0 z-30 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800 shadow-sm">
         <div className="max-w-5xl mx-auto px-4 py-2 flex gap-1.5">
           <button
             onClick={() => setActiveTab('calendar')}
             className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold transition-all ${
               activeTab === 'calendar'
                 ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
             }`}
           >
             <CalendarIcon className="w-4 h-4" />
@@ -226,7 +230,7 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
             className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold transition-all ${
               activeTab === 'camera'
                 ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
             }`}
           >
             <CameraIcon className="w-4 h-4" />
@@ -257,6 +261,7 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
             <Calendar
               year={calYear}
               events={yearEvents}
+              isDark={theme === 'dark'}
               onPrevYear={() => setCalYear(y => y - 1)}
               onNextYear={() => setCalYear(y => y + 1)}
               onSelect={handleCalendarSelect}
@@ -271,12 +276,12 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">{t.upcoming}</p>
+                <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">{t.upcoming}</p>
                 {upcomingEvents.length === 0 ? (
-                  <div className="bg-white border border-gray-100 rounded-2xl p-5 text-center">
-                    <p className="text-gray-400 text-sm">{t.noUpcoming}</p>
+                  <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 text-center">
+                    <p className="text-gray-400 dark:text-gray-500 text-sm">{t.noUpcoming}</p>
                     <button onClick={() => { setPickedDate(''); setPickedEndDate(''); setShowModal(true); }}
-                      className="text-blue-600 text-sm font-medium mt-1 hover:underline">
+                      className="text-blue-600 dark:text-blue-400 text-sm font-medium mt-1 hover:underline">
                       {t.planSomething}
                     </button>
                   </div>
@@ -291,7 +296,7 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
 
               {pastEvents.length > 0 && (
                 <div>
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">{t.pastEvents}</p>
+                  <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">{t.pastEvents}</p>
                   <div className="space-y-2">
                     {pastEvents.map(ev => (
                       <EventCard key={ev.id} event={ev} tripLabel={t.trip} past onDelete={deleteEvent} />
@@ -319,11 +324,11 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
             </div>
 
             {allEventsSorted.length === 0 ? (
-              <div className="bg-white border border-gray-100 rounded-2xl p-10 text-center">
+              <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-10 text-center">
                 <div className="text-4xl mb-3">📷</div>
-                <p className="text-gray-400 text-sm">{t.noEventsCamera}</p>
+                <p className="text-gray-400 dark:text-gray-500 text-sm">{t.noEventsCamera}</p>
                 <button onClick={() => setActiveTab('calendar')}
-                  className="text-blue-600 text-sm font-medium mt-2 hover:underline">
+                  className="text-blue-600 dark:text-blue-400 text-sm font-medium mt-2 hover:underline">
                   {t.tabCalendar} →
                 </button>
               </div>
@@ -340,8 +345,8 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
                   return (
                     <div
                       key={ev.id}
-                      className={`flex items-center gap-3 bg-white border rounded-2xl p-4 transition-all ${
-                        past ? 'opacity-60 border-gray-100' : 'border-gray-100 hover:border-blue-100 hover:shadow-sm'
+                      className={`flex items-center gap-3 bg-white dark:bg-gray-900 border rounded-2xl p-4 transition-all ${
+                        past ? 'opacity-60 border-gray-100 dark:border-gray-800' : 'border-gray-100 dark:border-gray-800 hover:border-blue-100 dark:hover:border-blue-900 hover:shadow-sm'
                       }`}
                     >
                       {/* Clickable area → event detail page */}
@@ -352,18 +357,18 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
                         {/* Date badge */}
                         <div
                           className="w-12 h-12 rounded-xl shrink-0 flex flex-col items-center justify-center"
-                          style={{ background: past ? '#f3f4f6' : color.card }}
+                          style={{ background: past ? (theme === 'dark' ? '#1f2937' : '#f3f4f6') : color.card }}
                         >
                           {isMulti ? (
-                            <span className={`text-[9px] font-bold text-center leading-tight ${past ? 'text-gray-500' : 'text-white'}`}>
+                            <span className={`text-[9px] font-bold text-center leading-tight ${past ? 'text-gray-500 dark:text-gray-400' : 'text-white'}`}>
                               {fmtShort(ev.date)}<br/>→{fmtShort(ev.endDate!)}
                             </span>
                           ) : (
                             <>
-                              <span className={`text-[10px] font-semibold uppercase ${past ? 'text-gray-400' : 'text-white/70'}`}>
+                              <span className={`text-[10px] font-semibold uppercase ${past ? 'text-gray-400 dark:text-gray-500' : 'text-white/70'}`}>
                                 {startD.toLocaleDateString([], { month: 'short' })}
                               </span>
-                              <span className={`text-base font-black leading-none ${past ? 'text-gray-600' : 'text-white'}`}>
+                              <span className={`text-base font-black leading-none ${past ? 'text-gray-600 dark:text-gray-300' : 'text-white'}`}>
                                 {startD.getDate()}
                               </span>
                             </>
@@ -372,10 +377,10 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
 
                         {/* Info */}
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-gray-900 text-sm truncate">{ev.title}</p>
+                          <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{ev.title}</p>
                           <div className="flex items-center gap-2 mt-0.5">
                             {ev.location && (
-                              <span className="text-xs text-gray-400 truncate max-w-[120px]">📍 {ev.location}</span>
+                              <span className="text-xs text-gray-400 dark:text-gray-500 truncate max-w-[120px]">📍 {ev.location}</span>
                             )}
                             <span className="text-xs font-medium" style={{ color: count > 0 ? color.circle : '#9ca3af' }}>
                               {t.snapCount(count)}
@@ -388,20 +393,14 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
                       </Link>
 
                       {/* Action button — separate from the link */}
-                      {locked ? (
-                        <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center shrink-0">
-                          <span className="text-lg">🔒</span>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => snapToEvent(ev.id)}
-                          className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-white transition-all hover:scale-105 active:scale-95"
-                          style={{ background: color.card }}
-                          title={`Add snap to ${ev.title}`}
-                        >
-                          <CameraIcon className="w-5 h-5" />
-                        </button>
-                      )}
+                      <button
+                        onClick={() => snapToEvent(ev.id)}
+                        className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-white transition-all hover:scale-105 active:scale-95"
+                        style={{ background: color.card }}
+                        title={`Add snap to ${ev.title}`}
+                      >
+                        <CameraIcon className="w-5 h-5" />
+                      </button>
                     </div>
                   );
                 })}
@@ -443,26 +442,28 @@ function EventCard({ event, past = false, tripLabel, onDelete }: {
   const isMultiDay = event.endDate && event.endDate !== event.date;
   const startD = new Date(event.date + 'T00:00:00');
   const color  = getColor(event.colorIndex);
+  const { theme } = useTheme();
+  const pastBg = theme === 'dark' ? '#1f2937' : '#f3f4f6';
 
   return (
     <div
-      className={`flex gap-3 bg-white border rounded-2xl p-4 hover:shadow-md transition-all group ${past ? 'opacity-70' : ''}`}
-      style={{ borderColor: past ? '#f3f4f6' : `${color.circle}40` }}
+      className={`flex gap-3 bg-white dark:bg-gray-900 border rounded-2xl p-4 hover:shadow-md transition-all group ${past ? 'opacity-70' : ''}`}
+      style={{ borderColor: past ? pastBg : `${color.circle}40` }}
     >
       <div
         className={`flex flex-col items-center justify-center rounded-xl shrink-0 ${isMultiDay ? 'w-14 h-12 px-1' : 'w-12 h-12'}`}
-        style={{ background: past ? '#f3f4f6' : color.card }}
+        style={{ background: past ? pastBg : color.card }}
       >
         {isMultiDay ? (
-          <span className={`text-[10px] font-bold text-center leading-tight ${past ? 'text-gray-600' : 'text-white'}`}>
+          <span className={`text-[10px] font-bold text-center leading-tight ${past ? 'text-gray-600 dark:text-gray-300' : 'text-white'}`}>
             {fmtShort(event.date)}<br/>→ {fmtShort(event.endDate!)}
           </span>
         ) : (
           <>
-            <span className={`text-xs font-semibold uppercase ${past ? 'text-gray-500' : 'text-white/70'}`}>
+            <span className={`text-xs font-semibold uppercase ${past ? 'text-gray-500 dark:text-gray-400' : 'text-white/70'}`}>
               {startD.toLocaleDateString([], { month: 'short' })}
             </span>
-            <span className={`text-lg font-black leading-none ${past ? 'text-gray-700' : 'text-white'}`}>
+            <span className={`text-lg font-black leading-none ${past ? 'text-gray-700 dark:text-gray-200' : 'text-white'}`}>
               {startD.getDate()}
             </span>
           </>
@@ -471,20 +472,20 @@ function EventCard({ event, past = false, tripLabel, onDelete }: {
 
       <Link href={`/group/${event.groupId}/event/${event.id}`} className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
-          <p className="font-semibold text-gray-900 text-sm truncate">{event.title}</p>
+          <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{event.title}</p>
           {isMultiDay && (
             <span className="text-xs px-1.5 py-0.5 rounded-full font-medium shrink-0 text-white"
               style={{ background: color.circle }}>{tripLabel}</span>
           )}
         </div>
-        {event.time && <p className="text-xs text-gray-500 mt-0.5">⏰ {event.time}</p>}
-        {event.location && <p className="text-xs text-gray-500 mt-0.5 truncate">📍 {event.location}</p>}
-        {event.locked && <p className="text-xs text-blue-500 mt-1 font-medium">🔒 Snaps locked</p>}
+        {event.time && <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">⏰ {event.time}</p>}
+        {event.location && <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">📍 {event.location}</p>}
+        {event.locked && <p className="text-xs text-blue-500 dark:text-blue-400 mt-1 font-medium">🔒 Snaps locked</p>}
       </Link>
 
       <button
         onClick={e => { e.preventDefault(); onDelete(event.id); }}
-        className="text-gray-300 hover:text-red-500 text-sm transition-all self-start pt-0.5 opacity-0 group-hover:opacity-100"
+        className="text-gray-300 dark:text-gray-600 hover:text-red-500 text-sm transition-all self-start pt-0.5 opacity-0 group-hover:opacity-100"
       >✕</button>
     </div>
   );

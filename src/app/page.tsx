@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { storage, Group } from '@/lib/storage';
-import { useLang } from '@/lib/LangContext';
+import { useLang, LangToggle } from '@/lib/LangContext';
+import { ThemeToggle } from '@/lib/ThemeContext';
 import CreateGroupModal from '@/components/CreateGroupModal';
 import ConfirmModal from '@/components/ConfirmModal';
 
@@ -68,18 +69,22 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-950 via-blue-900 to-blue-800">
       <header className="px-6 pt-10 pb-6 max-w-2xl mx-auto">
-        <div className="flex items-end justify-between">
+        <div className="flex items-start justify-between">
           <div>
             <h1 className="text-4xl font-black text-white tracking-tight">seeyou</h1>
             <p className="text-blue-300 text-sm mt-1">{t.appTagline}</p>
           </div>
-          <button
-            onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 bg-white text-blue-700 font-semibold text-sm px-4 py-2.5 rounded-xl hover:bg-blue-50 transition-colors shadow-lg"
-          >
-            <span className="text-lg leading-none">+</span>
-            {t.newGroup}
-          </button>
+          <div className="flex items-center gap-2 mt-1">
+            <ThemeToggle />
+            <LangToggle />
+            <button
+              onClick={() => setShowModal(true)}
+              className="flex items-center gap-2 bg-white text-blue-700 font-semibold text-sm px-4 py-2.5 rounded-xl hover:bg-blue-50 transition-colors shadow-lg"
+            >
+              <span className="text-lg leading-none">+</span>
+              {t.newGroup}
+            </button>
+          </div>
         </div>
       </header>
 

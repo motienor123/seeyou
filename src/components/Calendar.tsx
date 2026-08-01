@@ -8,6 +8,7 @@ import { useLang } from '@/lib/LangContext';
 interface Props {
   year: number;
   events: CalendarEvent[];
+  isDark?: boolean;
   onPrevYear: () => void;
   onNextYear: () => void;
   onSelect: (start: string, end: string) => void;
@@ -23,11 +24,19 @@ const SEASON: Record<string, { bg: string; accent: string }> = {
   autumn: { bg: '#fff7ed', accent: '#fb923c' },
 };
 
-function getSeason(month: number) {
-  if (month === 11 || month <= 1) return SEASON.winter;
-  if (month <= 4)  return SEASON.spring;
-  if (month <= 7)  return SEASON.summer;
-  return SEASON.autumn;
+const SEASON_DARK: Record<string, { bg: string; accent: string }> = {
+  winter: { bg: '#111c2e', accent: '#60a5fa' },
+  spring: { bg: '#0f1f16', accent: '#4ade80' },
+  summer: { bg: '#241f0d', accent: '#facc15' },
+  autumn: { bg: '#251708', accent: '#fb923c' },
+};
+
+function getSeason(month: number, isDark: boolean) {
+  const palette = isDark ? SEASON_DARK : SEASON;
+  if (month === 11 || month <= 1) return palette.winter;
+  if (month <= 4)  return palette.spring;
+  if (month <= 7)  return palette.summer;
+  return palette.autumn;
 }
 
 function getEventsForDay(dateStr: string, events: CalendarEvent[]) {
@@ -46,7 +55,7 @@ function getEventsForDay(dateStr: string, events: CalendarEvent[]) {
   return { singleDay, ranges };
 }
 
-export default function Calendar({ year, events, onPrevYear, onNextYear, onSelect }: Props) {
+export default function Calendar({ year, events, isDark = false, onPrevYear, onNextYear, onSelect }: Props) {
   const { t } = useLang();
   const [selStart, setSelStart] = useState<string | null>(null);
   const [hovDate, setHovDate]   = useState<string | null>(null);
@@ -92,7 +101,7 @@ export default function Calendar({ year, events, onPrevYear, onNextYear, onSelec
 
   return (
     <>
-      <div className="bg-white rounded-2xl shadow-sm border border-blue-100 overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-blue-100 dark:border-gray-800 overflow-hidden">
         {/* Year header */}
         <div className="flex items-center justify-between px-5 py-3 bg-blue-600 text-white">
           <button onClick={() => { setSelStart(null); onPrevYear(); }}
@@ -103,26 +112,26 @@ export default function Calendar({ year, events, onPrevYear, onNextYear, onSelec
         </div>
 
         {/* Hint bar */}
-        <div className="flex items-center justify-between px-4 py-2 bg-blue-50 border-b border-blue-100 min-h-[36px]">
+        <div className="flex items-center justify-between px-4 py-2 bg-blue-50 dark:bg-blue-950/40 border-b border-blue-100 dark:border-gray-800 min-h-[36px]">
           {selStart ? (
             <>
-              <span className="text-xs text-blue-700 font-medium">
+              <span className="text-xs text-blue-700 dark:text-blue-300 font-medium">
                 {selIsRange
                   ? `${normStart} → ${normEnd}`
                   : `${t.fromLabel} ${selStart} — ${t.tapEndDate}`}
               </span>
               <button onClick={() => { setSelStart(null); setHovDate(null); }}
-                className="text-xs text-blue-500 hover:text-blue-700 font-semibold ml-3 shrink-0">
+                className="text-xs text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-200 font-semibold ml-3 shrink-0">
                 {t.cancel}
               </button>
             </>
           ) : (
-            <p className="text-xs text-blue-400 w-full text-center">{t.tapToAdd}</p>
+            <p className="text-xs text-blue-400 dark:text-blue-500 w-full text-center">{t.tapToAdd}</p>
           )}
         </div>
 
         {/* 12 months */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 divide-x divide-y divide-blue-50">
+        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 divide-x divide-y divide-blue-50 dark:divide-gray-800">
           {Array.from({ length: 12 }, (_, month) => (
             <MonthGrid
               key={month}
@@ -135,6 +144,7 @@ export default function Calendar({ year, events, onPrevYear, onNextYear, onSelec
               normStart={normStart}
               normEnd={normEnd}
               selIsRange={selIsRange}
+              isDark={isDark}
               onDayClick={handleDayClick}
               onDayHover={date => { if (selStart) setHovDate(date); }}
               onShowTooltip={showTooltip}
@@ -157,24 +167,24 @@ export default function Calendar({ year, events, onPrevYear, onNextYear, onSelec
             }}
           >
             <div
-              className="bg-white rounded-xl shadow-2xl border border-gray-100 p-2.5 min-w-[150px] max-w-[230px]"
+              className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-800 p-2.5 min-w-[150px] max-w-[230px]"
               style={{ animation: 'fadeInTooltip 0.15s ease-out forwards' }}
             >
               {tooltip.events.map((ev, i) => (
                 <div
                   key={ev.id}
                   className="flex items-start gap-2 py-1.5 first:pt-0 last:pb-0"
-                  style={{ borderBottom: i < tooltip.events.length - 1 ? '1px solid #f3f4f6' : 'none' }}
+                  style={{ borderBottom: i < tooltip.events.length - 1 ? `1px solid ${isDark ? '#1f2937' : '#f3f4f6'}` : 'none' }}
                 >
                   <div className="w-2 h-2 rounded-full mt-1 shrink-0"
                     style={{ background: getColor(ev.colorIndex).circle }} />
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold text-gray-900 leading-tight truncate">{ev.title}</p>
+                    <p className="text-xs font-semibold text-gray-900 dark:text-white leading-tight truncate">{ev.title}</p>
                     {ev.endDate && ev.endDate !== ev.date && (
-                      <p className="text-[10px] text-gray-400 mt-0.5">{ev.date} → {ev.endDate}</p>
+                      <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">{ev.date} → {ev.endDate}</p>
                     )}
-                    {ev.time && <p className="text-[10px] text-gray-400 mt-0.5">⏰ {ev.time}</p>}
-                    {ev.location && <p className="text-[10px] text-gray-400 truncate">📍 {ev.location}</p>}
+                    {ev.time && <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">⏰ {ev.time}</p>}
+                    {ev.location && <p className="text-[10px] text-gray-400 dark:text-gray-500 truncate">📍 {ev.location}</p>}
                   </div>
                 </div>
               ))}
@@ -186,17 +196,17 @@ export default function Calendar({ year, events, onPrevYear, onNextYear, onSelec
   );
 }
 
-function MonthGrid({ year, month, monthName, dayAbbr, events, todayStr, normStart, normEnd, selIsRange,
+function MonthGrid({ year, month, monthName, dayAbbr, events, todayStr, normStart, normEnd, selIsRange, isDark,
   onDayClick, onDayHover, onShowTooltip, onHideTooltip }: {
   year: number; month: number; monthName: string; dayAbbr: readonly string[];
   events: CalendarEvent[]; todayStr: string;
-  normStart: string | null; normEnd: string | null; selIsRange: boolean;
+  normStart: string | null; normEnd: string | null; selIsRange: boolean; isDark: boolean;
   onDayClick: (d: string) => void;
   onDayHover: (d: string | null) => void;
   onShowTooltip: (evs: CalendarEvent[], e: React.MouseEvent<HTMLButtonElement>) => void;
   onHideTooltip: () => void;
 }) {
-  const season = getSeason(month);
+  const season = getSeason(month, isDark);
   const firstDay  = new Date(year, month, 1).getDay();
   const daysCount = new Date(year, month + 1, 0).getDate();
   const cells: (number | null)[] = [
@@ -213,7 +223,7 @@ function MonthGrid({ year, month, monthName, dayAbbr, events, todayStr, normStar
       </p>
       <div className="grid grid-cols-7 mb-1">
         {dayAbbr.map((d, i) => (
-          <span key={i} className="text-[9px] text-gray-300 text-center font-bold">{d}</span>
+          <span key={i} className="text-[9px] text-gray-300 dark:text-gray-600 text-center font-bold">{d}</span>
         ))}
       </div>
       <div className="grid grid-cols-7">

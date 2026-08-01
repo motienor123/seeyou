@@ -42,17 +42,17 @@ export function useLang() {
 export function LangToggle() {
   const { lang, setLang } = useLang();
   return (
-    <div className="fixed top-3 right-3 z-40 flex items-center gap-0.5 bg-black/30 backdrop-blur-sm rounded-full p-0.5 border border-white/20 shadow-lg">
+    <div className="flex items-center gap-0.5 bg-black/20 rounded-full p-0.5 border border-white/10">
       <button
         onClick={() => setLang('en')}
         className={`text-[11px] font-bold px-2.5 py-1 rounded-full transition-all ${
-          lang === 'en' ? 'bg-white text-gray-900' : 'text-white/60 hover:text-white'
+          lang === 'en' ? 'bg-white text-gray-900' : 'text-white/50 hover:text-white'
         }`}
       >EN</button>
       <button
         onClick={() => setLang('lt')}
         className={`text-[11px] font-bold px-2.5 py-1 rounded-full transition-all ${
-          lang === 'lt' ? 'bg-white text-gray-900' : 'text-white/60 hover:text-white'
+          lang === 'lt' ? 'bg-white text-gray-900' : 'text-white/50 hover:text-white'
         }`}
       >LT</button>
     </div>
